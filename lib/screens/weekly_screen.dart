@@ -5,6 +5,15 @@ import '../models/timetable_slot.dart';
 import '../screens/edit_slot_screen.dart';
 
 class WeeklyScreen extends StatefulWidget {
+  final List<TimetableSlot> timetableSlots;
+  final Function(List<TimetableSlot>) onUpdate;
+
+  const WeeklyScreen({
+    super.key,
+    required this.timetableSlots,
+    required this.onUpdate,
+  });
+
   @override
   _WeeklyScreenState createState() => _WeeklyScreenState();
 }
@@ -48,7 +57,19 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
 
     if (result != null) {
       await timetableBox.put(result.id, result);
-      setState(() {});
+
+      // Update local list too
+      final updatedList = [...widget.timetableSlots];
+      final index = updatedList.indexWhere((s) => s.id == result.id);
+      if (index >= 0) {
+        updatedList[index] = result;
+      } else {
+        updatedList.add(result);
+      }
+
+      widget.onUpdate(updatedList);
+
+      setState(() {}); // Refresh UI
     }
   }
 
@@ -65,7 +86,7 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
               // Header row for days
               Row(
                 children: [
-                  Container(width: 80, height: 40), // Empty top-left cell
+                  const SizedBox(width: 80, height: 40),
                   ...days.map((day) => Container(
                         width: 120,
                         height: 40,
@@ -94,10 +115,10 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
                         room: slotData.room,
                         onEdit: () => _editSlot(day, slot),
                       );
-                    }).toList(),
+                    }),
                   ],
                 );
-              }).toList(),
+              }),
             ],
           ),
         ),

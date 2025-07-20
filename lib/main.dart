@@ -4,7 +4,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'models/timetable_slot.dart';
 import 'screens/splash_screen.dart';
-import 'screens/weekly_screen.dart'; // Make sure this exists
+import 'screens/landing_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.deepPurple,
       ),
-      home: const SplashScreen(), // Or WeeklyScreen() if you want to skip splash
+      home: const SplashScreen(),
     );
   }
 }

@@ -4,7 +4,7 @@ import '../models/timetable_slot.dart';
 class EditSlotScreen extends StatefulWidget {
   final TimetableSlot slot;
 
-  const EditSlotScreen({Key? key, required this.slot}) : super(key: key);
+  const EditSlotScreen({super.key, required this.slot});
 
   @override
   _EditSlotScreenState createState() => _EditSlotScreenState();
