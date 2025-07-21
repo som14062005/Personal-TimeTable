@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '/models/timetable_slot.dart';
 import '/screens/weekly_screen.dart';
 import '/screens/daily_screen.dart';
+import '/screens/friend_screen.dart'; // ✅ Added import
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
@@ -39,44 +40,59 @@ class _LandingScreenState extends State<LandingScreen> {
         foregroundColor: Colors.black,
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildCircularButton(
-              label: 'Weekly View',
-              icon: Icons.calendar_month,
-              gradientColors: [Colors.purple, Colors.deepPurple],
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => WeeklyScreen(
-                      timetableSlots: timetableSlots,
-                      onUpdate: (updatedList) {
-                        setState(() {
-                          timetableSlots = updatedList;
-                        });
-                      },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Wrap(
+            spacing: 40,
+            runSpacing: 40,
+            alignment: WrapAlignment.center,
+            children: [
+              _buildCircularButton(
+                label: 'Weekly View',
+                icon: Icons.calendar_month,
+                gradientColors: [Colors.purple, Colors.deepPurple],
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => WeeklyScreen(
+                        timetableSlots: timetableSlots,
+                        onUpdate: (updatedList) {
+                          setState(() {
+                            timetableSlots = updatedList;
+                          });
+                        },
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 40),
-            _buildCircularButton(
-              label: 'Daily View',
-              icon: Icons.today,
-              gradientColors: [Colors.blueAccent, Colors.indigo],
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => DailyScreen(timetableSlots: timetableSlots),
-                  ),
-                );
-              },
-            ),
-          ],
+                  );
+                },
+              ),
+              _buildCircularButton(
+                label: 'Daily View',
+                icon: Icons.today,
+                gradientColors: [Colors.blueAccent, Colors.indigo],
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => DailyScreen(timetableSlots: timetableSlots),
+                    ),
+                  );
+                },
+              ),
+              _buildCircularButton( // ✅ Fixed name
+                label: 'Friends TT',
+                icon: Icons.people,
+                gradientColors: [Colors.teal, Colors.green],
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const FriendScreen()),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

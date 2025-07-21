@@ -74,31 +74,33 @@ class _DailyScreenState extends State<DailyScreen> {
   }
 
   /// ✅ Fixed time parsing with invisible Unicode removal
-  DateTime? extractStartTime(String timeSlot) {
-    try {
-      // Remove non-breaking and narrow no-break spaces
-      timeSlot = timeSlot.replaceAll(RegExp(r'[\u00A0\u202F]'), ' ').trim();
+ DateTime? extractStartTime(String timeSlot) {
+  try {
+    // Clean hidden Unicode spaces (non-breaking, narrow spaces, etc.)
+    timeSlot = timeSlot.replaceAll(RegExp(r'[\u00A0\u202F]'), ' ').trim();
 
-      // Split like "10-11 AM"
-      final parts = timeSlot.split('-');
-      if (parts.length != 2) return null;
+    final parts = timeSlot.split('-');
+    if (parts.length != 2) return null;
 
-      String start = parts[0].trim(); // e.g. "10"
-      String end = parts[1].trim();   // e.g. "11 AM"
+    final startRaw = parts[0].trim(); // e.g. "10"
+    final endRaw = parts[1].trim().toUpperCase(); // e.g. "11 AM" or "11PM"
 
-      // Extract AM/PM from the end part
-      String meridiem = end.toUpperCase().contains("PM") ? "PM" : "AM";
+    // Extract AM or PM from the end
+    final meridiemMatch = RegExp(r'(AM|PM)').firstMatch(endRaw);
+    if (meridiemMatch == null) return null;
 
-      // Construct start time in format like "10:00 AM"
-      String formattedStart = "$start:00 $meridiem";
+    final meridiem = meridiemMatch.group(0)!; // "AM" or "PM"
 
-      // Parse with DateFormat.jm (e.g. "10:00 AM")
-      return DateFormat.jm().parse(formattedStart);
-    } catch (e) {
-      debugPrint("Failed to parse time: '$timeSlot' => $e");
-      return null;
-    }
+    // Handle edge case like "11-12 PM" => "11:00 PM"
+    final formattedStart = "$startRaw:00 $meridiem";
+
+    return DateFormat.jm().parse(formattedStart);
+  } catch (e) {
+    debugPrint("Failed to parse time: '$timeSlot' => $e");
+    return null;
   }
+}
+
 
   Widget _buildDaySelector() {
     final days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
