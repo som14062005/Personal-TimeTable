@@ -24,17 +24,17 @@ class _WeeklyScreenState extends State<WeeklyScreen> with TickerProviderStateMix
   final List<String> days = ['Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   
   final int startHour = 8;
-  final int endHour = 18;
+  final int endHour = 17;
   final double hourHeight = 80.0;
   
   late Box<TimetableSlot> timetableBox;
   late AnimationController _fadeController;
   late ScrollController _verticalScrollController;
-  late ScrollController _horizontalScrollController1; // For day tabs
-  late ScrollController _horizontalScrollController2; // For grid
+  late ScrollController _horizontalScrollController1;
+  late ScrollController _horizontalScrollController2;
   
   DateTime now = DateTime.now();
-  bool _isScrolling = false; // Prevent infinite loop
+  bool _isScrolling = false;
 
   @override
   void initState() {
@@ -49,7 +49,6 @@ class _WeeklyScreenState extends State<WeeklyScreen> with TickerProviderStateMix
     _horizontalScrollController1 = ScrollController();
     _horizontalScrollController2 = ScrollController();
     
-    // Sync scrolling manually
     _horizontalScrollController1.addListener(() {
       if (!_isScrolling && _horizontalScrollController2.hasClients) {
         _isScrolling = true;
@@ -249,13 +248,6 @@ class _WeeklyScreenState extends State<WeeklyScreen> with TickerProviderStateMix
         gradient: LinearGradient(
           colors: [Colors.deepPurple, Colors.purple.shade700, Colors.blue.shade600],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.deepPurple.withOpacity(0.3),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-        ],
       ),
       child: SafeArea(
         bottom: false,
@@ -318,143 +310,146 @@ class _WeeklyScreenState extends State<WeeklyScreen> with TickerProviderStateMix
   }
 
   Widget _buildDayTabs(bool isDark) {
-  return Container(
-    height: 70,
-    margin: EdgeInsets.only(top: 12, bottom: 12),
-    child: Row(
-      children: [
-        // Day tabs - Uses controller 1
-        Expanded(
-          child: ListView.builder(
-            controller: _horizontalScrollController1,
-            scrollDirection: Axis.horizontal,
-            physics: BouncingScrollPhysics(),
-            padding: EdgeInsets.symmetric(horizontal: 16), // Left and right padding
-            itemCount: days.length,
-            itemBuilder: (context, index) {
-              // Tuesday=2, Wednesday=3, Thursday=4, Friday=5, Saturday=6
-              final isToday = now.weekday == index + 2;
-              final color = AppColors.subjectColors[index % AppColors.subjectColors.length];
-              
-              return AnimatedBuilder(
-                animation: _fadeController,
-                builder: (context, child) {
-                  final delay = index * 0.1;
-                  final animValue = Curves.easeOut.transform(
-                    (_fadeController.value - delay).clamp(0.0, 1.0) / (1.0 - delay)
-                  );
-                  
-                  return Opacity(
-                    opacity: animValue,
-                    child: Transform.scale(
-                      scale: 0.8 + (0.2 * animValue),
-                      child: Container(
-                        width: 140,
-                        margin: EdgeInsets.only(right: 12),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: isToday 
-                                ? [color, color.withOpacity(0.7)]
-                                : [color.withOpacity(0.3), color.withOpacity(0.1)],
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isToday ? Colors.white.withOpacity(0.4) : Colors.transparent,
-                            width: 2,
-                          ),
-                          boxShadow: isToday ? [
-                            BoxShadow(
-                              color: color.withOpacity(0.4),
-                              blurRadius: 12,
-                              offset: Offset(0, 4),
+    return Container(
+      height: 70,
+      margin: EdgeInsets.only(top: 12, bottom: 12),
+      child: Row(
+        children: [
+          // Space for time labels
+          SizedBox(width: 60),
+          Expanded(
+            child: ListView.builder(
+              controller: _horizontalScrollController1,
+              scrollDirection: Axis.horizontal,
+              physics: BouncingScrollPhysics(),
+              padding: EdgeInsets.only(left: 4, right: 16),
+              itemCount: days.length,
+              itemBuilder: (context, index) {
+                final isToday = now.weekday == index + 2;
+                final color = AppColors.subjectColors[index % AppColors.subjectColors.length];
+                
+                return AnimatedBuilder(
+                  animation: _fadeController,
+                  builder: (context, child) {
+                    final delay = index * 0.1;
+                    final animValue = Curves.easeOut.transform(
+                      (_fadeController.value - delay).clamp(0.0, 1.0) / (1.0 - delay)
+                    );
+                    
+                    return Opacity(
+                      opacity: animValue,
+                      child: Transform.scale(
+                        scale: 0.8 + (0.2 * animValue),
+                        child: Container(
+                          width: 140,
+                          margin: EdgeInsets.only(right: 12),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: isToday 
+                                  ? [color, color.withOpacity(0.7)]
+                                  : [color.withOpacity(0.3), color.withOpacity(0.1)],
                             ),
-                          ] : null,
-                        ),
-                        child: Center(
-                          child: Text(
-                            days[index],
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              color: isToday ? Colors.white : (isDark ? Colors.white70 : Colors.black87),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isToday ? Colors.white.withOpacity(0.4) : Colors.transparent,
+                              width: 2,
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              days[index],
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: isToday ? Colors.white : (isDark ? Colors.white70 : Colors.black87),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-Widget _buildTimelineView(bool isDark, double totalHeight) {
-  return SingleChildScrollView(
-    controller: _verticalScrollController,
-    physics: BouncingScrollPhysics(),
-    child: Expanded(
-      child: SingleChildScrollView(
-        controller: _horizontalScrollController2,
-        scrollDirection: Axis.horizontal,
-        physics: BouncingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 16), // Left and right padding
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: List.generate(days.length, (dayIndex) {
-            return _buildDayColumn(days[dayIndex], dayIndex, isDark, totalHeight);
-          }),
-        ),
-      ),
-    ),
-  );
-}
-
-
-  Widget _buildTimeLabels(bool isDark, double totalHeight) {
-    return SizedBox(
-      width: 60,
-      height: totalHeight + 40,
-      child: Stack(
-        children: List.generate(endHour - startHour + 1, (index) {
-          final hour = startHour + index;
-          final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
-          final period = hour >= 12 ? 'PM' : 'AM';
-          
-          return Positioned(
-            top: index * hourHeight,
-            child: Container(
-              height: hourHeight,
-              child: Column(
-                children: [
-                  Text(
-                    '$displayHour',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: isDark ? Colors.white : Colors.black87,
-                      fontFamily: 'monospace',
-                    ),
-                  ),
-                  Text(
-                    period,
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
-                      fontFamily: 'monospace',
-                    ),
-                  ),
-                ],
-              ),
+                    );
+                  },
+                );
+              },
             ),
-          );
-        }),
+          ),
+        ],
       ),
     );
+  }
+
+  Widget _buildTimelineView(bool isDark, double totalHeight) {
+    return SingleChildScrollView(
+      controller: _verticalScrollController,
+      physics: BouncingScrollPhysics(),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Time labels column
+          _buildTimeLabels(isDark, totalHeight),
+          // Scrollable days
+          Expanded(
+            child: SingleChildScrollView(
+              controller: _horizontalScrollController2,
+              scrollDirection: Axis.horizontal,
+              physics: BouncingScrollPhysics(),
+              padding: EdgeInsets.only(left: 4, right: 16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: List.generate(days.length, (dayIndex) {
+                  return _buildDayColumn(days[dayIndex], dayIndex, isDark, totalHeight);
+                }),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeLabels(bool isDark, double totalHeight) {
+  return Container(
+    width: 60,
+    height: totalHeight + 40,
+    padding: EdgeInsets.only(right: 8, top: 20), // ✅ Added top padding
+    child: Stack(
+      children: List.generate(endHour - startHour + 1, (index) {
+        final hour = startHour + index;
+        final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+        final period = hour >= 12 ? 'PM' : 'AM';
+        
+        return Positioned(
+          top: index * hourHeight, // ✅ Changed from "index * hourHeight - 10"
+          left: 0,
+          right: 0,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '$displayHour',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontFamily: 'monospace',
+                ),
+              ),
+              Text(
+                period,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  fontFamily: 'monospace',
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
+    ),
+  );
+
   }
 
   Widget _buildDayColumn(String day, int dayIndex, bool isDark, double totalHeight) {
@@ -496,7 +491,6 @@ Widget _buildTimelineView(bool isDark, double totalHeight) {
             }),
             
             // Current time indicator
-            // Tuesday=2, Wednesday=3, Thursday=4, Friday=5, Saturday=6
             if (now.weekday == dayIndex + 2 && now.hour >= startHour && now.hour <= endHour)
               Positioned(
                 top: _getSlotTop('${now.hour}:${now.minute}'),
@@ -504,18 +498,7 @@ Widget _buildTimelineView(bool isDark, double totalHeight) {
                 right: 0,
                 child: Container(
                   height: 3,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.red, Colors.red.withOpacity(0.3)],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.red.withOpacity(0.5),
-                        blurRadius: 8,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
+                  color: Colors.red,
                   child: Row(
                     children: [
                       Container(
@@ -524,13 +507,6 @@ Widget _buildTimelineView(bool isDark, double totalHeight) {
                         decoration: BoxDecoration(
                           color: Colors.red,
                           shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.red.withOpacity(0.6),
-                              blurRadius: 8,
-                              spreadRadius: 2,
-                            ),
-                          ],
                         ),
                       ),
                     ],
@@ -666,162 +642,156 @@ Widget _buildTimelineView(bool isDark, double totalHeight) {
   }
 
   Widget _buildTimelineSlot(TimetableSlot slot, Color color, bool isDark) {
-    final startTime = slot.startTime ?? slot.timeSlot;
-    final endTime = slot.endTime ?? slot.timeSlot;
-    final height = _getSlotHeight(startTime, endTime).clamp(60.0, 500.0);
-    
-    String timeDisplay;
-    if (startTime == endTime) {
-      timeDisplay = startTime;
-    } else {
-      timeDisplay = '$startTime-$endTime';
-    }
-    
-    return GestureDetector(
-      onTap: () async {
-        final result = await Navigator.push<TimetableSlot>(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => 
-                EditSlotScreen(slot: slot),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return SlideTransition(
-                position: Tween<Offset>(
-                  begin: Offset(1.0, 0.0),
-                  end: Offset.zero,
-                ).animate(CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                )),
-                child: child,
-              );
-            },
-            transitionDuration: Duration(milliseconds: 300),
-          ),
-        );
-
-        if (result != null) {
-          await timetableBox.put(result.id, result);
-          final updatedList = [...widget.timetableSlots];
-          final index = updatedList.indexWhere((s) => s.id == result.id);
-          if (index >= 0) {
-            if (result.subject.isEmpty) {
-              updatedList.removeAt(index);
-              await timetableBox.delete(result.id);
-            } else {
-              updatedList[index] = result;
-            }
-          } else if (result.subject.isNotEmpty) {
-            updatedList.add(result);
-          }
-          widget.onUpdate(updatedList);
-          setState(() {});
-        }
-      },
-      child: Container(
-        height: height,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [color, color.withOpacity(0.8)],
-          ),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.4),
-              blurRadius: 12,
-              offset: Offset(0, 4),
-            ),
-          ],
+  final startTime = slot.startTime ?? slot.timeSlot;
+  final endTime = slot.endTime ?? slot.timeSlot;
+  final height = _getSlotHeight(startTime, endTime).clamp(60.0, 500.0);
+  
+  String timeDisplay;
+  if (startTime == endTime) {
+    timeDisplay = startTime;
+  } else {
+    timeDisplay = '$startTime-$endTime';
+  }
+  
+  return GestureDetector(
+    onTap: () async {
+      final result = await Navigator.push<TimetableSlot>(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => 
+              EditSlotScreen(slot: slot),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: Offset(1.0, 0.0),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              )),
+              child: child,
+            );
+          },
+          transitionDuration: Duration(milliseconds: 300),
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: SingleChildScrollView(
-            physics: NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.all(8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
+      );
+
+      if (result != null) {
+        await timetableBox.put(result.id, result);
+        final updatedList = [...widget.timetableSlots];
+        final index = updatedList.indexWhere((s) => s.id == result.id);
+        if (index >= 0) {
+          if (result.subject.isEmpty) {
+            updatedList.removeAt(index);
+            await timetableBox.delete(result.id);
+          } else {
+            updatedList[index] = result;
+          }
+        } else if (result.subject.isNotEmpty) {
+          updatedList.add(result);
+        }
+        widget.onUpdate(updatedList);
+        setState(() {});
+      }
+    },
+    child: Container(
+      height: height,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [color, color.withOpacity(0.8)],
+        ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: SingleChildScrollView(
+          physics: NeverScrollableScrollPhysics(),
+          padding: EdgeInsets.all(8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                slot.subject.isNotEmpty ? slot.subject : 'Untitled',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  height: 1.2,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (slot.teacher.isNotEmpty) ...[
+                SizedBox(height: 3),
                 Text(
-                  slot.subject.isNotEmpty ? slot.subject : 'Untitled',
+                  slot.teacher,
                   style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    height: 1.2,
+                    fontSize: 10,
+                    color: Colors.white.withOpacity(0.9),
+                    fontWeight: FontWeight.w600,
                   ),
-                  maxLines: 2,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (slot.teacher.isNotEmpty) ...[
-                  SizedBox(height: 3),
-                  Text(
-                    slot.teacher,
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.white.withOpacity(0.9),
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-                SizedBox(height: 4),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.schedule, size: 9, color: Colors.white),
-                      SizedBox(width: 3),
-                      Flexible(
-                        child: Text(
-                          timeDisplay,
-                          style: TextStyle(
-                            fontSize: 8,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontFamily: 'monospace',
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (slot.room.isNotEmpty) ...[
-                  SizedBox(height: 3),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.location_on, size: 9, color: Colors.white.withOpacity(0.9)),
-                      SizedBox(width: 3),
-                      Flexible(
-                        child: Text(
-                          slot.room,
-                          style: TextStyle(
-                            fontSize: 8,
-                            color: Colors.white.withOpacity(0.9),
-                            fontWeight: FontWeight.w600,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
               ],
-            ),
+              SizedBox(height: 4),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.schedule, size: 9, color: Colors.white),
+                    SizedBox(width: 3),
+                    Flexible(
+                      child: Text(
+                        timeDisplay,
+                        style: TextStyle(
+                          fontSize: 8,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: 'monospace',
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (slot.room.isNotEmpty) ...[
+                SizedBox(height: 3),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.location_on, size: 9, color: Colors.white.withOpacity(0.9)),
+                    SizedBox(width: 3),
+                    Flexible(
+                      child: Text(
+                        slot.room,
+                        style: TextStyle(
+                          fontSize: 8,
+                          color: Colors.white.withOpacity(0.9),
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 }

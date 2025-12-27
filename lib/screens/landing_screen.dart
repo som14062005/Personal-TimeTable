@@ -68,153 +68,151 @@ class _LandingScreenState extends State<LandingScreen>
   }
 
   Future<void> _clearAllData() async {
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: Row(
-        children: [
-          Icon(Icons.warning_rounded, color: Colors.red, size: 28),
-          SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Clear All Data?',
-              style: TextStyle(fontWeight: FontWeight.w800),
-            ),
-          ),
-        ],
-      ),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
           children: [
-            Text(
-              'This will permanently delete:',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-            SizedBox(height: 12),
-            _buildDeleteItem('All timetable slots'),
-            _buildDeleteItem('All friends and their timetables'),
-            _buildDeleteItem('All saved data'),
-            SizedBox(height: 16),
-            Container(
-              padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.withOpacity(0.3)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.info_outline, color: Colors.red, size: 20),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'This action cannot be undone!',
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ],
+            Icon(Icons.warning_rounded, color: Colors.red, size: 28),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Clear All Data?',
+                style: TextStyle(fontWeight: FontWeight.w800),
               ),
             ),
           ],
         ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'This will permanently delete:',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              SizedBox(height: 12),
+              _buildDeleteItem('All timetable slots'),
+              _buildDeleteItem('All friends and their timetables'),
+              _buildDeleteItem('All saved data'),
+              SizedBox(height: 16),
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.red, size: 20),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'This action cannot be undone!',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: Text(
+              'Delete All',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: Text('Cancel', style: TextStyle(color: Colors.grey)),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.pop(context, true),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-          child: Text(
-            'Delete All',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-          ),
-        ),
-      ],
-    ),
-  );
+    );
 
-  if (confirmed == true) {
-    try {
-      // Clear timetable box
-      final timetableBox = Hive.box<TimetableSlot>('timetableBox');
-      await timetableBox.clear();
+    if (confirmed == true) {
+      try {
+        final timetableBox = Hive.box<TimetableSlot>('timetableBox');
+        await timetableBox.clear();
 
-      // Clear friends box
-      final friendsBox = Hive.box<FriendModel>('friendsBox');
-      await friendsBox.clear();
+        final friendsBox = Hive.box<FriendModel>('friendsBox');
+        await friendsBox.clear();
 
-      setState(() {
-        timetableSlots = [];
-      });
+        setState(() {
+          timetableSlots = [];
+        });
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 12),
-                Text('All data cleared successfully!'),
-              ],
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.white),
+                  SizedBox(width: 12),
+                  Text('All data cleared successfully!'),
+                ],
+              ),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              duration: Duration(seconds: 3),
             ),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.error, color: Colors.white),
+                  SizedBox(width: 12),
+                  Expanded(child: Text('Error: $e')),
+                ],
+              ),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-            duration: Duration(seconds: 3),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.error, color: Colors.white),
-                SizedBox(width: 12),
-                Expanded(child: Text('Error: $e')),
-              ],
-            ),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        );
+          );
+        }
       }
     }
   }
-}
 
-Widget _buildDeleteItem(String text) {
-  return Padding(
-    padding: EdgeInsets.only(bottom: 8),
-    child: Row(
-      children: [
-        Icon(Icons.close, color: Colors.red, size: 18),
-        SizedBox(width: 8),
-        Expanded(child: Text(text)),
-      ],
-    ),
-  );
-}
+  Widget _buildDeleteItem(String text) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Icon(Icons.close, color: Colors.red, size: 18),
+          SizedBox(width: 8),
+          Expanded(child: Text(text)),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -237,13 +235,18 @@ Widget _buildDeleteItem(String text) {
             SafeArea(
               child: Column(
                 children: [
-                  SizedBox(height: 20),
                   _buildTopBar(),
-                  SizedBox(height: 20),
-                  _buildHeader(),
-                  SizedBox(height: 60),
                   Expanded(
-                    child: _buildButtonGrid(),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildHeader(),
+                          SizedBox(height: 60),
+                          _buildButtonGrid(),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -256,7 +259,7 @@ Widget _buildDeleteItem(String text) {
 
   Widget _buildTopBar() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.all(16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
@@ -411,59 +414,57 @@ Widget _buildDeleteItem(String text) {
   }
 
   Widget _buildButtonGrid() {
-    return Center(
-      child: Wrap(
-        spacing: 40,
-        runSpacing: 40,
-        alignment: WrapAlignment.center,
-        children: [
-          _buildAnimatedButton(
-            label: 'Weekly View',
-            icon: Icons.calendar_month,
-            gradientColors: [Colors.purple, Colors.deepPurple],
-            delay: 0.0,
-            onTap: () {
-              Navigator.push(
-                context,
-                _createRoute(
-                  WeeklyScreen(
-                    timetableSlots: timetableSlots,
-                    onUpdate: (updatedList) {
-                      setState(() {
-                        timetableSlots = updatedList;
-                      });
-                    },
-                  ),
+    return Wrap(
+      spacing: 40,
+      runSpacing: 40,
+      alignment: WrapAlignment.center,
+      children: [
+        _buildAnimatedButton(
+          label: 'Weekly View',
+          icon: Icons.calendar_month,
+          gradientColors: [Colors.purple, Colors.deepPurple],
+          delay: 0.0,
+          onTap: () {
+            Navigator.push(
+              context,
+              _createRoute(
+                WeeklyScreen(
+                  timetableSlots: timetableSlots,
+                  onUpdate: (updatedList) {
+                    setState(() {
+                      timetableSlots = updatedList;
+                    });
+                  },
                 ),
-              );
-            },
-          ),
-          _buildAnimatedButton(
-            label: 'Daily View',
-            icon: Icons.today,
-            gradientColors: [Colors.blueAccent, Colors.indigo],
-            delay: 0.15,
-            onTap: () {
-              Navigator.push(
-                context,
-                _createRoute(DailyScreen(timetableSlots: timetableSlots)),
-              );
-            },
-          ),
-          _buildAnimatedButton(
-            label: 'Friends TT',
-            icon: Icons.people,
-            gradientColors: [Colors.teal, Colors.green],
-            delay: 0.3,
-            onTap: () {
-              Navigator.push(
-                context,
-                _createRoute(const FriendScreen()),
-              );
-            },
-          ),
-        ],
-      ),
+              ),
+            );
+          },
+        ),
+        _buildAnimatedButton(
+          label: 'Daily View',
+          icon: Icons.today,
+          gradientColors: [Colors.blueAccent, Colors.indigo],
+          delay: 0.15,
+          onTap: () {
+            Navigator.push(
+              context,
+              _createRoute(DailyScreen(timetableSlots: timetableSlots)),
+            );
+          },
+        ),
+        _buildAnimatedButton(
+          label: 'Friends TT',
+          icon: Icons.people,
+          gradientColors: [Colors.teal, Colors.green],
+          delay: 0.3,
+          onTap: () {
+            Navigator.push(
+              context,
+              _createRoute(const FriendScreen()),
+            );
+          },
+        ),
+      ],
     );
   }
 
