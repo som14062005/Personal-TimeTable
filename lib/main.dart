@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'models/timetable_slot.dart';
-import 'models/friend_model.dart'; // Make sure this file exists
-import 'screens/splash_screen.dart';
+import 'models/friend_model.dart';
+import 'screens/landing_screen.dart'; // ✅ Changed import
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,8 +27,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.deepPurple,
+        brightness: Brightness.dark, // Optional: dark theme
       ),
-      home: const SplashScreen(),
+      home: const LandingScreen(), // ✅ Changed to LandingScreen
     );
   }
 }

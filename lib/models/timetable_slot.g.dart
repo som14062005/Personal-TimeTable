@@ -23,13 +23,16 @@ class TimetableSlotAdapter extends TypeAdapter<TimetableSlot> {
       room: fields[3] as String,
       day: fields[4] as String,
       timeSlot: fields[5] as String,
+      startTime: fields[6] as String?,
+      endTime: fields[7] as String?,
+      color: fields[8] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, TimetableSlot obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -41,7 +44,13 @@ class TimetableSlotAdapter extends TypeAdapter<TimetableSlot> {
       ..writeByte(4)
       ..write(obj.day)
       ..writeByte(5)
-      ..write(obj.timeSlot);
+      ..write(obj.timeSlot)
+      ..writeByte(6)
+      ..write(obj.startTime)
+      ..writeByte(7)
+      ..write(obj.endTime)
+      ..writeByte(8)
+      ..write(obj.color);
   }
 
   @override
